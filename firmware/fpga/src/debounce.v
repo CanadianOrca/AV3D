@@ -6,7 +6,7 @@
 // output is only "armed" when the input has been steady after reset
 // so if button was wired incorrectly nothing fires at power-up
 
-module debouncer #(
+module debounce #(
     parameter CNT_BITS = 18 // 2^18 / 27 mhz = 9.7 ms
 ) (
     input  wire clk,
