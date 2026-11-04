@@ -1,0 +1,18 @@
+# Everything text uses LF line endings in the repo, even when edited on Windows.
+# Python script with crlf endings will FAIL on pi.
+* text=auto eol=lf
+
+# make windows only keep CRLF
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary files: should NEVER be touched
+*.png  binary
+*.jpg  binary
+*.pdf  binary
+*.zip  binary
+*.step binary
+*.stp  binary
+*.f3d  binary
+*.xlsx binary
+*.fs   binary
