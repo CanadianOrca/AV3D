@@ -1,0 +1,94 @@
+/* Gowin pin constraints, Sipeed Tang Nano 20k (GW2AR-LV18QN88C8/I7)
+
+the header pins are 15-20, 25-31, 41, 42, 48, 49, 51-56, 71-77, 79, 80, 85, 86.
+
+Nine are wired to pins on the module, so we cannot avoid them. They are used where the extra load will cause no harm.
+
+15-20 onboard LEDs > DATA lines (LEDs flicker)
+16 onboard LED1 > /OE (led1 on = drivers on)
+79 WS2812 data in > ID (static, so rgb led stays dark)
+80, 85 SD CARD d2/d1 (pull up) > DATA lines
+25 and 26 (HDMI CEC/HPD) are the 2 spares.
+*/
+
+// on the module
+IO_LOC  "clk27" 4;
+IO_PORT "clk27" IO_TYPE=LVCMOS33 PULL_MODE=UP;
+IO_LOC  "btn_s1" 88;
+IO_PORT "btn_s1" IO_TYPE=LVCMOS33 PULL_MODE=NONE;
+
+// shift register clocks (clean)
+IO_LOC  "sr_clk_a" 27;
+IO_PORT "sr_clk_a" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8;
+IO_LOC  "sr_clk_b" 28;
+IO_PORT "sr_clk_b" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8;
+IO_LOC  "sr_latch" 29;
+IO_PORT "sr_latch" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8;
+IO_LOC  "sr_oe_n" 16;
+IO_PORT "sr_oe_n" IO_TYPE=LVCMOS33 PULL_MODE=UP DRIVE=8;
+
+// DATA1..DATA18 > SER of U10..U27
+IO_LOC  "sr_data[0]" 75;
+IO_PORT "sr_data[0]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8;
+IO_LOC  "sr_data[1]" 80;
+IO_PORT "sr_data[1]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8;
+IO_LOC  "sr_data[2]" 51;
+IO_PORT "sr_data[2]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8;
+IO_LOC  "sr_data[3]" 49;
+IO_PORT "sr_data[3]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8;
+IO_LOC  "sr_data[4]" 86;
+IO_PORT "sr_data[4]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8;
+IO_LOC  "sr_data[5]" 72;
+IO_PORT "sr_data[5]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8;
+IO_LOC  "sr_data[6]" 71;
+IO_PORT "sr_data[6]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8;
+IO_LOC  "sr_data[7]" 53;
+IO_PORT "sr_data[7]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8;
+IO_LOC  "sr_data[8]" 52;
+IO_PORT "sr_data[8]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8;
+IO_LOC  "sr_data[9]" 73;
+IO_PORT "sr_data[9]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8;
+IO_LOC  "sr_data[10]" 74;
+IO_PORT "sr_data[10]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8;
+IO_LOC  "sr_data[11]" 76;
+IO_PORT "sr_data[11]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8;
+IO_LOC  "sr_data[12]" 85;
+IO_PORT "sr_data[12]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8;
+IO_LOC  "sr_data[13]" 15;
+IO_PORT "sr_data[13]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8;
+IO_LOC  "sr_data[14]" 17;
+IO_PORT "sr_data[14]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8;
+IO_LOC  "sr_data[15]" 20;
+IO_PORT "sr_data[15]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8;
+IO_LOC  "sr_data[16]" 19;
+IO_PORT "sr_data[16]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8;
+IO_LOC  "sr_data[17]" 18;
+IO_PORT "sr_data[17]" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8;
+
+//SPI from the pin
+IO_LOC  "spi_sck" 77;
+IO_PORT "spi_sck" IO_TYPE=LVCMOS33 PULL_MODE=DOWN;
+IO_LOC  "spi_mosi" 30;
+IO_PORT "spi_mosi" IO_TYPE=LVCMOS33 PULL_MODE=DOWN;
+IO_LOC  "spi_cs_n" 31;
+IO_PORT "spi_cs_n" IO_TYPE=LVCMOS33 PULL_MODE=UP;
+IO_LOC  "spi_miso" 41;
+IO_PORT "spi_miso" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8;
+
+// board to board
+IO_LOC  "sync_io" 42;
+IO_PORT "sync_io" IO_TYPE=LVCMOS33 PULL_MODE=DOWN DRIVE=8;
+IO_LOC  "step_io" 48;
+IO_PORT "step_io" IO_TYPE=LVCMOS33 PULL_MODE=DOWN DRIVE=8;
+
+// LED mosfet
+IO_LOC  "led_r" 54;
+IO_PORT "led_r" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8;
+IO_LOC  "led_g" 55;
+IO_PORT "led_g" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8;
+IO_LOC  "led_b" 56;
+IO_PORT "led_b" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8;
+
+// board id
+IO_LOC  "id_n" 79;
+IO_PORT "id_n" IO_TYPE=LVCMOS33 PULL_MODE=UP;
