@@ -4,17 +4,6 @@ pin nums in av3d.cst
 */
 
 module av3d_top #(
-    `include "clocks.v"
-    `include "synchronizer.v"
-    `include "debounce.v"
-    `include "cycle_timer.v"
-    `include "spi_slave.v"
-    `include "cmd_decoder.v"
-    `include "point_ram.v"
-    `include "player.v"
-    `include "channel_gen.v"
-    `include "shift_out.v"
-    `include "led_pwm.v"
     parameter POR_BITS = 20, // power on reset (2^20 ticks)
     parameter BTN_BITS = 4 // button debounce
 ) (
@@ -59,7 +48,7 @@ module av3d_top #(
     wire btn_s, btn_press;
     synchronizer #(.W(1)) u_btn_sync (.clk(clk), .d(btn_s1), .q(btn_s));
     debounce #(.CNT_BITS(BTN_BITS)) u_btn (
-        .clk(clk), .rst(rst), .level(), .press(btn_press));
+        .clk(clk), .rst(rst), .din(btn_s), .level(), .press(btn_press));
 
     // 40 khz cycle and sync
     wire [4:0] step, tick;
@@ -127,7 +116,7 @@ module av3d_top #(
             .clk(clk),
             .we(ram_we), .waddr(ram_waddr), .wdata(ram_wdata),
             .raddr(ram_raddr), .rdata(ram_rdata),
-            .cw(col_we), .cwaddr(col_waddr), .cwdata(col_wdata),
+            .cwe(col_we), .cwaddr(col_waddr), .cwdata(col_wdata),
             .craddr(col_raddr), .crdata(col_rdata));
 
         // player

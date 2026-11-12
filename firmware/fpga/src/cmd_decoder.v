@@ -56,7 +56,7 @@ module cmd_decoder #(
     reg [7:0] cmd;
     reg [7:0] pos;
     reg [7:0] hi;
-    reg [7:0] idx;
+    reg [9:0] idx;
     reg idx_ok;
     reg [AW-1:0] base;
     reg [5:0] word;
