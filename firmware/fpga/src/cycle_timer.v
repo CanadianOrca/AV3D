@@ -19,14 +19,14 @@ module cycle_timer (
     input wire clk,
     input wire rst,
     input wire is_top,
-    input wire sync_in,
-    input wire [3:0] trim, // raw SYNC pin (bottom board)
-    output reg [4:0] step, // 2..12, default 3
-    output reg [4:0] tick, // 0..31
-    output wire last_tick, // 0..20 or 0..21 within step
-    output wire cycle_start, //final tick of the step
+    input wire sync_in, // raw SYNC pin (bottom board)
+    input wire [3:0] trim, // 2..12, default 3
+    output reg [4:0] step, // 0..31
+    output reg [4:0] tick, // 0..20 or 0..21 within the step
+    output wire last_tick, // final tick of the step
+    output wire cycle_start, // step 0, tick 0
     output reg sync_out, // top board SYNC wave
-    output reg sync_ok // top: 1, bottom: sync edges
+    output reg sync_ok // top: always 1; bottom: locked and SYNC edges still arriving
 );
 
     localparam [4:0] CORR_TICK = 5'd17;
@@ -73,7 +73,7 @@ module cycle_timer (
             // gentle corrections (bottom)
             if (!is_top && tick == CORR_TICK && corr != 3'sd0) begin
                 if (corr > 3'sd0) begin
-                    tick <= tick + 1'b1; // skip a tick
+                    tick <= tick; // stall: repeat this tick (bottom is ahead)
                     corr <= corr - 3'sd1;
                 end else begin
                     tick <= CORR_TICK + 5'd1 + {3'b000, (corr == -3'sd1) ? 2'd1 : 2'd2};
@@ -96,6 +96,7 @@ module cycle_timer (
                         // hard lock
                         step <= 5'd0;
                         tick <= {1'b0, trim} + 5'd1; // +1 to get to tick 0 of next step
+                        corr <= 3'sd0;              // drop any correction left from before
                         locked <= 1'b1;
                     end
                 end else if (sync_age !=11'h7FF) begin

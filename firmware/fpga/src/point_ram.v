@@ -26,8 +26,8 @@ module point_ram #(
     input wire [CW-1:0] craddr,
     output reg [23:0] crdata
 );
-    reg [17:0] mem [0:(1<<AW)-1] /* syntheses syn_ramstyle = "block_ram" */;
-    reg [23:0] cmem [0:(1<<CW)-1] /* syntheses syn_ramstyle = "block_ram" */;
+    reg [17:0] mem [0:(1<<AW)-1] /* synthesis syn_ramstyle = "block_ram" */;
+    reg [23:0] cmem [0:(1<<CW)-1] /* synthesis syn_ramstyle = "block_ram" */;
 
 `ifdef SIMULATION
     // real block ram powers up as zeros; ensures simulator does the same

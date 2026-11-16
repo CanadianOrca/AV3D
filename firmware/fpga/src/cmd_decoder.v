@@ -64,6 +64,13 @@ module cmd_decoder #(
     reg [11:0] pack;
     reg [7:0] red, grn;
 
+    reg [17:0] stage [0:47];
+    reg        committing;
+    reg [5:0]  c_word;
+    reg [AW-1:0] c_base;
+    reg [9:0]  c_idx;
+    reg [23:0] c_rgb;
+
     wire [15:0] val16 = {hi, rx_byte};
     wire [5:0] ch6 = {rx_byte[7], rx_byte[4:0]};
     wire [9:0] idx_in = {hi[1:0], rx_byte};
@@ -79,6 +86,22 @@ module cmd_decoder #(
         cmd_show <= 1'b0;
         cmd_test <= 1'b0;
 
+        if (!rst && committing) begin
+            ram_we    <= 1'b1;
+            ram_waddr <= c_base + {{(AW-6){1'b0}}, c_word};
+            ram_wdata <= stage[c_word];
+            if (c_word == 6'd47) begin
+                committing     <= 1'b0;
+                col_we         <= 1'b1;
+                col_waddr      <= c_idx;
+                col_wdata      <= c_rgb;
+                pt_written     <= 1'b1;
+                pt_written_idx <= c_idx;
+            end else begin
+                c_word <= c_word + 1'b1;
+            end
+        end
+
         if (rst) begin
             pos <= 8'd0;
             cmd <= C_NOP;
@@ -87,6 +110,8 @@ module cmd_decoder #(
             trim <= DEFAULT_TRIM;
             show_idx <= 10'd0;
             test_value <= 2'd0;
+            committing <= 1'b0;
+            c_word <= 6'd0;
         end else if (frame_start) begin
             pos <= 8'd0;
         end else if (rx_valid) begin
@@ -119,9 +144,7 @@ module cmd_decoder #(
                                 2'd0: begin pack[5:0]  <= ch6; sub <= 2'd1; end
                                 2'd1: begin pack[11:6] <= ch6; sub <= 2'd2; end
                                 default: begin
-                                    ram_we    <= idx_ok;
-                                    ram_waddr <= base + {{(AW-6){1'b0}}, word};
-                                    ram_wdata <= {ch6, pack};
+                                    stage[word] <= {ch6, pack};
                                     word      <= word + 1'b1;
                                     sub       <= 2'd0;
                                 end
@@ -131,11 +154,14 @@ module cmd_decoder #(
                         end else if (pos == 8'd148) begin
                             grn <= rx_byte;
                         end else if (pos == 8'd149) begin
-                            col_we <= idx_ok;
-                            col_waddr <= idx;
-                            col_wdata <= {red, grn, rx_byte};
-                            pt_written <= idx_ok;
-                            pt_written_idx <= idx;
+                            // starting copying staged point to memory
+                            if (idx_ok) begin
+                                committing <= 1'b1;
+                                c_word <= 6'd0;
+                                c_base <= base;
+                                c_idx <= idx;
+                                c_rgb <= {red, grn, rx_byte};
+                            end
                         end
                     end
                     // 16 bit setter
@@ -157,8 +183,8 @@ module cmd_decoder #(
                     end
                     // 8 bit setter
                     C_TRIM: if (pos == 8'd1) begin
-                        if (rx_byte == 8'd2) trim <= 4'd2;
-                        else if (rx_byte == 8'd12) trim <= 4'd12;
+                        if (rx_byte < 8'd2) trim <= 4'd2;          // clamp to 2..12
+                        else if (rx_byte > 8'd12) trim <= 4'd12;
                         else trim <= rx_byte[3:0];
                     end
                     C_TEST: if (pos == 8'd1) begin

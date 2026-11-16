@@ -5,7 +5,7 @@ pin nums in av3d.cst
 
 module av3d_top #(
     parameter POR_BITS = 20, // power on reset (2^20 ticks)
-    parameter BTN_BITS = 4 // button debounce
+    parameter BTN_BITS = 18 // button debounce: 2^18 ticks = 9.7 ms
 ) (
     input  wire        clk27,              // 27 MHz oscillator
     input  wire        btn_s1,             // tnb s1 cycle test
@@ -67,9 +67,11 @@ module av3d_top #(
     wire rx_valid, frame_start, frame_end, miso_bit;
     wire [7:0] rx_byte;
     wire [9:0] cur_idx;
-    wire playing, showing;
+    wire playing, showing, aligned;
     reg [1:0] test_mode;
-    wire outputs_on = showing || (test_mode != 2'd0);
+    
+    wire run_ok = is_top || (sync_ok && (!playing || aligned));
+    wire outputs_on = (showing && run_ok) || (test_mode != 2'd0);
     wire [7:0] status = {3'b101, sync_ok, (test_mode != 2'd0), outputs_on, playing, is_top};
 
     spi_slave u_spi (
@@ -124,7 +126,7 @@ module av3d_top #(
         wire [23:0] active_rgb;
         wire step_out;
         player #(.NCH(NCH), .MAX_POINTS(MAX_POINTS), .AW(AW)) u_player (
-            .clk(clk), .rst(rst), .is_top(is_top),
+            .clk(clk), .rst(rst), .is_top(is_top), .sync_ok(sync_ok),
             .step(step), .step_start(step_start), .cycle_start(cycle_start), .swap_tick(swap_tick),
             .cmd_play(cmd_play), .cmd_stop(cmd_stop), .cmd_off(cmd_off),
             .cmd_show(cmd_show), .show_idx(show_idx),
@@ -134,7 +136,7 @@ module av3d_top #(
             .ram_raddr(ram_raddr), .ram_rdata(ram_rdata),
             .col_raddr(col_raddr), .col_rdata(col_rdata),
             .active_cfg(active_cfg), .active_rgb(active_rgb),
-            .playing(playing), .showing(showing), .cur_idx(cur_idx));
+            .playing(playing), .showing(showing), .aligned(aligned), .cur_idx(cur_idx));
         assign step_io = is_top ? step_out : 1'bz;
 
         // channel > shift registers

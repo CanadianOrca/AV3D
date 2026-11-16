@@ -3,7 +3,7 @@
 8-bit PWM at 27 MHz / 8 / 256 = 13.18359375 kHz, fast enough to give every point its own colour
 a point lasts 150 us at 6667 points per second. and slow enough for the mosfets to switch cleanly
 
-in test mode leds step red, green, blue, off at 25% brightness, about 0.6s each so LED wiring can be checked.
+in test mode leds step red, green, blue, off at 25% brightness, about 0.31 s each (2^23 ticks) so LED wiring can be checked.
 */
 
 module led_pwm (

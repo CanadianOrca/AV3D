@@ -22,6 +22,7 @@ module player #(
     input wire clk,
     input wire rst,
     input wire is_top,
+    input wire sync_ok, // bottom: SYNC locked
     // timing from cycle_timer
     input wire [4:0] step,
     input wire step_start,
@@ -50,6 +51,7 @@ module player #(
     output reg [23:0] active_rgb,
     output wire playing,
     output wire showing,
+    output reg aligned, // bottom: has followed a wrap to point 0 since PLAY / SYNC loss
     output reg [9:0] cur_idx
 );
     localparam [1:0] M_OFF = 2'd0, M_HOLD = 2'd1, M_PLAY = 2'd2;
@@ -151,7 +153,11 @@ module player #(
             in_pulse     <= 1'b0;
             decided      <= 1'b0;
              pw_cnt       <= 5'd0;
+            aligned      <= 1'b0;
         end else begin
+            // bottom alignment: lost with SYNC, regained at the next wrap
+            if (!is_top && !sync_ok) aligned <= 1'b0;
+            else if (!is_top && mode == M_PLAY && follow_wrap) aligned <= 1'b1;
             // prefetch read 48 words + colour into shadow
             data_v <= issue_v; // ram output is 1 lock behind
             if (pf_busy && (pf_idx != want_idx || write_hits_pf)) begin
@@ -204,7 +210,7 @@ module player #(
             if (st_fall) in_pulse <= 1'b0;
             if (!is_top && mode == M_PLAY && follow_now) begin
                 do_adv <= 1'b1;
-                adv_wrap <= follow_now;
+                adv_wrap <= follow_wrap;
                 adv_target <= follow_wrap ? 10'd0 : next_seq;
                 want_idx <= follow_wrap ? 10'd0 : next_seq;
             end
@@ -262,6 +268,7 @@ module player #(
             end
             if (cmd_play) begin
                 mode <= M_PLAY;
+                aligned <= is_top;
                 want_idx <= 10'd0;
                 hold_pending <= 1'b0;
                 start_req <= is_top;
