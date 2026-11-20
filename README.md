@@ -1,4 +1,4 @@
-># PROJECT A3VD (Acoustic Levitation Volumetric Display)
+># PROJECT AV3D (Acoustic Levitation Volumetric Display)
 
 ### Basic intro
 
@@ -15,7 +15,7 @@ This is our Hackclub **Fallen** project, that will hopefully let *us* go to **Sh
 ---
 
 > ## Table of Contents
->- [AV3D ("Avid") – a levitating 3D display](#PROJECT-A3VD-(Acoustic-Levitation-Volumetric-Display))
+>- [AV3D ("Avid") – a levitating 3D display](#PROJECT-AV3D-(Acoustic-Levitation-Volumetric-Display))
 >   - [Why we made it](#why-we-made-it)
 >   - [What even is our project?](#what-even-is-our-project) ![thinking monkey](https://s.yimg.com/lo/mysterio/api/9b1e38019f04650961897c1e01fb28e2516c81eb4057ed7c00ebdf5700ba8f04/lightyear_networkapi/resizefill_w720_h480%3Bquality_80%3Bformat_webp/https%3A%2F%2Fmedia.zenfs.com%2Fen%2Fknow_your_meme_909%2Fc5f02a6432ec9dffe31ad021803be151)
 >   - [How to use our project](#how-to-use-our-project)
@@ -43,7 +43,7 @@ We made the project since this is our first time doing a project like this, we h
 ----
 
 ## What even is our project?
-A3VD is an ultra sound powered, 3d visual display made from two boards facing each other that is around 135 mm apart. Each board has 144 small ultrasonic transducers, arranged in a 12 × 12 grid. (288 total transducers).
+AV3D is an ultra sound powered, 3d visual display made from two boards facing each other that is around 135 mm apart. Each board has 144 small ultrasonic transducers, arranged in a 12 × 12 grid. (288 total transducers).
 
 #### Making the bead float
 
@@ -222,5 +222,5 @@ Coming soon: photos of the finished build.
 ---
 ## Credits
 - Dan Foisy's [VDATP](https://github.com/danfoisy/vdatp), the open-source build that got us started.
-- Hirayama et al., "A volumetric display for visual, tactile and audio presentation using acoustic trapping", *Nature* (2019), the research paper we used to research about the idea of A3VD
+- Hirayama et al., "A volumetric display for visual, tactile and audio presentation using acoustic trapping", *Nature* (2019), the research paper we used to research about the idea of AV3D
 - Hack Club, for running Fallen 💖.
