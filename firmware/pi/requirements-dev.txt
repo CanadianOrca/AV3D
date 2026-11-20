@@ -1,0 +1,4 @@
+# extra tools for computer: sound simulation and plot
+-r requirements.txt
+scipy>=1.10
+matplotlib>=3.7

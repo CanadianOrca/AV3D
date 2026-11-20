@@ -1,0 +1,5 @@
+# Pi requires these to run AV3D
+
+numpy>=1.24
+spidev>=3.6; sys_platform == "linux"
+pytest>=7.0

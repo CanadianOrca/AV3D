@@ -1,0 +1,5 @@
+{
+  "_comment": "Copy to calibration.json. Phase corrections in steps (1 step = 11.25 deg), keyed by CH number. 16 flips a transducer soldered the wrong way round.",
+  "bottom": {},
+  "top": {}
+}

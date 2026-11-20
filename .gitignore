@@ -48,3 +48,7 @@ desktop.ini
 !.vscode/settings.json
 !.vscode/extensions.json
 !.vscode/tasks.json
+
+# Temporary (remove before submission)
+# reduce clutter from hardware files
+hardware/
