@@ -215,7 +215,7 @@ Coming soon: photos of the finished build.
 ----
 ## Team
 - [CanadianOrca](https://github.com/CanadianOrca) (Jason Cui) – Primary Lead, Firmware
-- [awau2011](https://github.com/awau2011) (Andre Au) – Secondary Lead, CAD Design
+- [nodmyhead](https://github.com/awau2011) (Andre Au) – Secondary Lead, CAD Design
 - [harishmaharaja24](https://github.com/harishmaharaja24) (Harish Maharaja) – PCB Design, Electronics
 - [Salestics](https://github.com/Salestics) (Lucas Huang) –  Planning, Administration
 
