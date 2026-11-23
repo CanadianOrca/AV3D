@@ -1,0 +1,35 @@
+name: checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  pi:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: firmware/pi
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements-dev.txt
+      - name: Pi unit tests (check 6)
+        run: python -m pytest -q
+      - name: Sound simulation (check 3)
+        run: python tools/sound_sim.py
+
+  fpga:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install numpy
+      - run: sudo apt-get update && sudo apt-get install -y iverilog
+      - name: FPGA testbenches (check 4)
+        working-directory: firmware/fpga/sim
+        run: python run_sims.py

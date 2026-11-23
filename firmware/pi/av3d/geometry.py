@@ -48,7 +48,7 @@ def local_xy(ch, pitch=C.PITCH_M):
     half = (C.GRID_N - 1) / 2
     return (col - half) * pitch, (half - row) * pitch
 
-def board__position(board, gap=C.BOARD_GAP_M, pitch=C.PITCH_M, flip=C.TOP_FLIP_AXIS):
+def board_position(board, gap=C.BOARD_GAP_M, pitch=C.PITCH_M, flip=C.TOP_FLIP_AXIS):
     pos = np.zeros((C.CHANNELS_PER_BOARD, 3))
     for k in range(C.CHANNELS_PER_BOARD):
         x, y = local_xy(k + 1, pitch=pitch)
@@ -56,9 +56,9 @@ def board__position(board, gap=C.BOARD_GAP_M, pitch=C.PITCH_M, flip=C.TOP_FLIP_A
             pos[k] = (x, y, -gap / 2)
         elif board == "top":
             if flip == "x":
-                pos[k] = (-x, y, gap / 2)
-            elif flip == "y":
                 pos[k] = (x, -y, gap / 2)
+            elif flip == "y":
+                pos[k] = (-x, y, gap / 2)
             else:
                 raise ValueError("flip must be on x or y")
         else:
@@ -66,7 +66,7 @@ def board__position(board, gap=C.BOARD_GAP_M, pitch=C.PITCH_M, flip=C.TOP_FLIP_A
     return pos
 
 def all_positions(gap=C.BOARD_GAP_M, pitch=C.PITCH_M, flip=C.TOP_FLIP_AXIS):
-    return np.stack([board__position(b, gap, pitch, flip) for b in BOARDS])
+    return np.stack([board_position(b, gap, pitch, flip) for b in BOARDS])
 
 def channel_table():
     rows = []

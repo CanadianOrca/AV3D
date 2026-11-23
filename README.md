@@ -66,7 +66,7 @@ From the bead trapped in the pocket made by the transducers with those sound wav
 
 >1. Flash the two Tang Nanos and set up the Raspberry Pi.
 >2. turn on the power supply and then the Raspberry Pi
->3. Run cli.py on the Raspberry Pi
+>3. Run python3 -m av3d.cli from firmware/pi on the Raspberry Pi
 >4. Press home so the trap holds still which gives enough space for the bead.
 >5. Place one single 2-3mm polystyrene foam bead in the middle with tweezers, then let go once it starts floating.
 >6. Slowly move the bead using computer to see if the trap is following our commands.
@@ -85,11 +85,11 @@ How the work is split:
 
 - **Raspberry Pi Zero 2 W:**  The Raspberry pi works out how each transducer should be timed in python, as well as the phase of every transducer for each point in a shape and sends the result to both boards over SPI.
 - **Tang Nano 20K FPGA:** (one on each board) The Tang Nano 20K FPGA stores the shape and plays it back with exact timing. The top board sends sync signals to the bottom board so they stay in step.
-- **Manorshi MSO-P1040H07T Transducers:** 144 of them on each board (288 total) create the sound waves that make the pocket where the polystyrene bead can fit in.
+- **Manorshi MSO-P1Z1040DH07T Transducers:** 144 of them on each board (288 total) create the sound waves that make the pocket where the polystyrene bead can fit in.
 - **2-3mm polysterne bead:** floats in the air and moves along the outline of the board very fast, illuminated by 3 LEDs to create shapes using persistence of vision.
 - **74AHC595 shift registers:** 18 shift registers per board, (36 total) they turn the FPGA's signals into 144 separate channels.
 - **TC4428A drivers:** (one per transducer) switch 12 V to drive each transducer, these drivers make the sound loud enough to trap the polystyrene bead.
-- **RGB LEDs:** 3 RGB LEDS on the bottom board that lights up the bead.
+- **RGB LEDs:** 3 RGB LEDS on the top board that lights up the bead.
 
 
 ---
@@ -170,7 +170,7 @@ Coming soon: photos of the finished build.
 |**Control**  | |
 | ---| --- |
 | Controller | Raspberry Pi Zero 2 W (SPI to the boards) |
-| FPGAs | Tang Nano 20K (2 per board) |
+| FPGAs | Tang Nano 20K (1 per board) |
 | Shift Register|TI SN74AHC595 (on the PCB) |
 
 | **Power**| |
@@ -180,7 +180,7 @@ Coming soon: photos of the finished build.
 
 | **Lighting**| |
 |--- |--- |
-|LEDS |6W 3 pin RGB LEDs |
+|LEDS |6-pin 3 W RGB LEDs |
 
 | **USE**| |
 |--- |--- |
@@ -192,12 +192,12 @@ Coming soon: photos of the finished build.
 
 | Folder | What's inside |
 |---|---|
-| `Hardware/kicad/` | KiCad PCB files, Gerbers and assembly files |
+| `hardware/kicad/` | KiCad PCB files, Gerbers and assembly files |
 | `cad/` | CAD files for the frame of AV3D |
-| `Firmware/fpga` | Verilog code for the Tang Nano 20K |
-| `Firmware/pi` | Python code for the Raspberry Pi |
+| `firmware/fpga` | Verilog code for the Tang Nano 20K |
+| `firmware/pi` | Python code for the Raspberry Pi |
 | `docs/` | Design notes and channel map |
-| `BOM.csv` | parts list with prices |
+| `bom.csv` | parts list with prices |
 
 ---
 ## Safety notices

@@ -101,8 +101,8 @@ def triangle(side=0.035, n=C.MAX_SHAPE_POINTS, plane="xz", center=(0, 0, 0), cor
     return _finish(_plane(r * np.cos(a), r * np.sin(a), plane, center), n, corner_mm=corner_mm)
 
 def star(radius=0.022, n=C.MAX_SHAPE_POINTS, plane="xz", center=(0, 0, 0), corner_mm=4.0):
-    r = side / np.sqrt(3)
-    a = np.pi / 2 + 2 * np.pi * np.arange(3) / 3
+    a = np.pi / 2 + np.pi * np.arange(10) / 5
+    r = np.where(np.arange(10) % 2 == 0, radius, radius * 0.382)
     return _finish(_plane(r * np.cos(a), r * np.sin(a), plane, center), n, corner_mm=corner_mm)
 
 def figure8(size=0.025, n=C.MAX_SHAPE_POINTS, plane="xz", center=(0, 0, 0)):

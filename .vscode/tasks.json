@@ -1,0 +1,57 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Pi: run tests",
+      "type": "shell",
+      "command": "python -m pytest -q",
+      "options": { "cwd": "${workspaceFolder}/firmware/pi" },
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Pi: sound simulation (check 3)",
+      "type": "shell",
+      "command": "python tools/sound_sim.py --plot",
+      "options": { "cwd": "${workspaceFolder}/firmware/pi" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Pi: CLI in pretend mode",
+      "type": "shell",
+      "command": "python -m av3d.cli --pretend -v",
+      "options": { "cwd": "${workspaceFolder}/firmware/pi" },
+      "problemMatcher": []
+    },
+    {
+      "label": "FPGA: run all simulations (check 4)",
+      "type": "shell",
+      "command": "python run_sims.py",
+      "options": { "cwd": "${workspaceFolder}/firmware/fpga/sim" },
+      "group": { "kind": "test", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "FPGA: build bitstream (Gowin gw_sh)",
+      "type": "shell",
+      "command": "gw_sh build.tcl",
+      "options": { "cwd": "${workspaceFolder}/firmware/fpga" },
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "FPGA: program Tang Nano (SRAM, temporary)",
+      "type": "shell",
+      "command": "openFPGALoader -b tangnano20k impl/pnr/av3d.fs",
+      "options": { "cwd": "${workspaceFolder}/firmware/fpga" },
+      "problemMatcher": []
+    },
+    {
+      "label": "FPGA: program Tang Nano (flash, permanent)",
+      "type": "shell",
+      "command": "openFPGALoader -b tangnano20k -f impl/pnr/av3d.fs",
+      "options": { "cwd": "${workspaceFolder}/firmware/fpga" },
+      "problemMatcher": []
+    }
+  ]
+}

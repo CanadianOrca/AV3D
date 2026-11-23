@@ -9,7 +9,7 @@ src/clocks.v	27 MHz in, power-on reset
 src/synchronizer.v, src/debounce.v	Safe inputs, S1 button
 src/cycle_timer.v	32 steps per cycle; SYNC out (top) or lock to SYNC (bottom)
 src/spi_slave.v	Bytes from the Pi; STATUS / echo / index back
-src/cmd_decoder.v	Commands from docs/protocol.md
+src/cmd_decoder.v	Look for command list at top of file
 src/point_ram.v	680 points in block RAM
 src/player.v	Plays the points, STEP pulses keep both boards together
 src/channel_gen.v	On/off for all 144 channels, plus test modes

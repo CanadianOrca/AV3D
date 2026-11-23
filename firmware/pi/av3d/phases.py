@@ -23,7 +23,7 @@ def phase_fraction(positions, point, wavelength=C.WAVELENGTH_M):
     return np.mod(-d / wavelength, 1.0)
 
 def to_steps(fraction, steps=C.PHASE_STEPS):
-    return np.mod(np.jrint(np.asarray(fraction) * steps).astype(int), steps)
+    return np.mod(np.rint(np.asarray(fraction) * steps).astype(int), steps)
 
 class PhaseSolver:
 

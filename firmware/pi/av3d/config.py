@@ -18,7 +18,7 @@ CH_PER_BANK = 8
 BANK_BLOCK_ROWS = 2 # EACH BANK IS 2 x 4 block of transducer
 BANK_BLOCK_COLS = 4
 BANK_GRID_COLS = 3 # blocks are laid out 3 across
-BANK_GRID_ROWS = 2 # blocks are laid out 6 down
+BANK_GRID_ROWS = 6 # blocks are laid out 6 down
 
 # the board sits with pcbs facing each other vertically. use y if frame flips it other way
 
@@ -40,7 +40,7 @@ LIVE_SLOTS = (678, 679) # slots reserved for live updates
 MAX_SHAPE_POINTS = 678 # shapes use slots 0-677
 DEFAULT_RATE = 6 # 40 khz cycles per point > 6667 points/s
 MIN_RATE = 1
-MAX_RATE = 66535
+MAX_RATE = 65535
 DEFAULT_SYNC_TRIM = 3 # bottom board SYNC offset in 27 mhz ticks
 
 # SPI
