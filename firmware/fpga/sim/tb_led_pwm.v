@@ -6,6 +6,7 @@
 
 `timescale 1ps/1ps
 module tb_led_pwm;
+    `include "tb_report.vh"
     reg clk = 0;
     always #18518 clk = ~clk;
     reg rst = 1, enable = 0, test = 0;
@@ -21,8 +22,8 @@ module tb_led_pwm;
     integer failures = 0;
     task check(input [8*120-1:0] name, input ok);
         begin
-            if (ok) $display("PASS %0s", name);
-            else begin $display("FAIL %0s", name); failures = failures + 1; end
+            if (ok) $fdisplay(out, "PASS %0s", name);
+            else begin $fdisplay(out, "FAIL %0s", name); failures = failures + 1; end
         end
     endtask
 
@@ -43,6 +44,7 @@ module tb_led_pwm;
     endtask
 
     initial begin
+        report_open;
         repeat (10) @(posedge clk);
         rst = 0;
         // line the measurement up with the PWM period
@@ -54,7 +56,7 @@ module tb_led_pwm;
 
         enable = 1;
         measure(4);
-        $display("INFO duty over 4 periods: R %0d, G %0d, B %0d of %0d clocks", hr, hg, hb, 4 * 2048);
+        $fdisplay(out, "INFO duty over 4 periods: R %0d, G %0d, B %0d of %0d clocks", hr, hg, hb, 4 * 2048);
         check("red 0: always off", hr == 0);
         check("green 128: on 128/256 of the time", hg == 4 * 128 * 8);
         check("blue 255: on 255/256 of the time", hb == 4 * 255 * 8);
@@ -78,7 +80,8 @@ module tb_led_pwm;
         enable = 0; dut.slow = 25'h0000000; measure(1);
         check("test pattern also needs enable", hr == 0 && hg == 0 && hb == 0);
 
-        $display("SUMMARY failures=%0d", failures);
+        $fdisplay(out, "SUMMARY failures=%0d", failures);
+        report_close;
         $finish;
     end
 endmodule

@@ -7,6 +7,7 @@
 
 `timescale 1ps/1ps
 module tb_spi_slave;
+    `include "tb_report.vh"
     reg clk = 0;
     always #18518 clk = ~clk;
     reg rst = 1;
@@ -27,8 +28,8 @@ module tb_spi_slave;
     integer failures = 0;
     task check(input [8*120-1:0] name, input ok);
         begin
-            if (ok) $display("PASS %0s", name);
-            else begin $display("FAIL %0s", name); failures = failures + 1; end
+            if (ok) $fdisplay(out, "PASS %0s", name);
+            else begin $fdisplay(out, "FAIL %0s", name); failures = failures + 1; end
         end
     endtask
 
@@ -59,6 +60,7 @@ module tb_spi_slave;
     reg [7:0] sent [0:255];
     integer i, bad, n;
     initial begin
+        report_open;
         repeat (10) @(posedge clk);
         rst = 0;
         repeat (10) @(posedge clk);
@@ -120,7 +122,8 @@ module tb_spi_slave;
         cs_low; xfer(8'h3C); xfer(8'hC3); cs_high;
         check("250 kHz writes received", ngot == 2 && got[0] == 8'h3C && got[1] == 8'hC3);
 
-        $display("SUMMARY failures=%0d", failures);
+        $fdisplay(out, "SUMMARY failures=%0d", failures);
+        report_close;
         $finish;
     end
 endmodule

@@ -45,11 +45,11 @@ def test_positions_and_spacing():
 
 
 def test_top_board_is_flipped_over_x():
-    bot = G.board_positions("bottom", flip="x")
-    top = G.board_positions("top", flip="x")
+    bot = G.board_position("bottom", flip="x")
+    top = G.board_position("top", flip="x")
     assert np.allclose(top[:, 0], bot[:, 0])           # x kept
     assert np.allclose(top[:, 1], -bot[:, 1])          # y mirrored
-    top_y = G.board_positions("top", flip="y")
+    top_y = G.board_position("top", flip="y")
     assert np.allclose(top_y[:, 0], -bot[:, 0])
 
 

@@ -48,6 +48,7 @@ module stream_master #(parameter TOPFILE = 0) (
 endmodule
 
 module tb_vectors;
+    `include "tb_report.vh"
     reg clk_t = 0, clk_b = 0;
     always #18518 clk_t = ~clk_t;                          // 27 MHz
     always #18517 clk_b = ~clk_b;                          // bottom crystal about 54 ppm fast
@@ -84,8 +85,8 @@ module tb_vectors;
     integer failures = 0;
     task check(input [8*120-1:0] name, input ok);
         begin
-            if (ok) $display("PASS %0s", name);
-            else begin $display("FAIL %0s", name); failures = failures + 1; end
+            if (ok) $fdisplay(out, "PASS %0s", name);
+            else begin $fdisplay(out, "FAIL %0s", name); failures = failures + 1; end
         end
     endtask
 
@@ -149,7 +150,8 @@ module tb_vectors;
     integer p, w, b, bad_words, bad_col;
     reg [17:0] want;
     initial begin
-        $display("INFO vectors: %0d points, rate %0d, %0d stream lines", `N_POINTS, `RATE, `STREAM_LEN);
+        report_open;
+        $fdisplay(out, "INFO vectors: %0d points, rate %0d, %0d stream lines", `N_POINTS, `RATE, `STREAM_LEN);
         #(200_000_000);                                    // past the shortened power-on reset
         go = 1;
         wait (done_t && done_b);
@@ -175,7 +177,7 @@ module tb_vectors;
         // ---- play three whole loops and check every latch (if PLAY reaches the bottom board
         //      just after the top board's wrap, the bottom joins at the next wrap: one loop later)
         repeat (3 * `N_POINTS * `RATE + 8) @(posedge TOP.u_timer.cycle_start);
-        $display("INFO latches checked: top %0d, bottom %0d (errors %0d, %0d); same-point checks %0d (mismatches %0d)",
+        $fdisplay(out, "INFO latches checked: top %0d, bottom %0d (errors %0d, %0d); same-point checks %0d (mismatches %0d)",
                  lat_t, lat_b, errs_t, errs_b, same_checks, idx_mismatch);
         check("both boards playing with drivers on", TOP.u_player.playing && BOT.u_player.playing && !oe_t && !oe_b);
         check("every latched output of the top board matches the Pi's phase for that point", errs_t == 0 && lat_t > 32 * `N_POINTS);
@@ -183,7 +185,8 @@ module tb_vectors;
         check("channels the Pi switched off (bottom CH17, top CH100) never switched on", dead_on == 0);
         check("both boards always played the same point", idx_mismatch == 0 && same_checks > `N_POINTS);
 
-        $display("SUMMARY failures=%0d", failures);
+        $fdisplay(out, "SUMMARY failures=%0d", failures);
+        report_close;
         $finish;
     end
 endmodule

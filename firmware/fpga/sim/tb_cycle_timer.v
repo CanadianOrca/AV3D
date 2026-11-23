@@ -8,6 +8,7 @@
 
 `timescale 1ps/1ps
 module tb_cycle_timer;
+    `include "tb_report.vh"
     // ---------------------------------------------------------------- clocks
     reg clk_t = 0, clk_f = 0, clk_s = 0;
     always #18518 clk_t = ~clk_t;                          // 27 MHz
@@ -38,8 +39,8 @@ module tb_cycle_timer;
     integer failures = 0;
     task check(input [8*120-1:0] name, input ok);
         begin
-            if (ok) $display("PASS %0s", name);
-            else begin $display("FAIL %0s", name); failures = failures + 1; end
+            if (ok) $fdisplay(out, "PASS %0s", name);
+            else begin $fdisplay(out, "FAIL %0s", name); failures = failures + 1; end
         end
     endtask
 
@@ -127,6 +128,7 @@ module tb_cycle_timer;
     integer t0, hf0, hs0, i;
     reg ok;
     initial begin
+        report_open;
         repeat (20) @(posedge clk_t);
         rst = 0;
         check("bottom boards report no sync before the first SYNC edge", !ok_0 && !ok_f && !ok_s);
@@ -142,8 +144,8 @@ module tb_cycle_timer;
         measure = 1;
         repeat (400 * 675) @(posedge clk_t);
         measure = 0;
-        $display("INFO worst offset vs top: same clock %0d, +200 ppm %0d, -200 ppm %0d ticks", max0, maxf, maxs);
-        $display("INFO gentle corrections: fast board %0d stalls, slow board %0d skips", stall_f, skip_s);
+        $fdisplay(out, "INFO worst offset vs top: same clock %0d, +200 ppm %0d, -200 ppm %0d ticks", max0, maxf, maxs);
+        $fdisplay(out, "INFO gentle corrections: fast board %0d stalls, slow board %0d skips", stall_f, skip_s);
         check("same clock, trim 3: bottom counts in exact step with the top board", max0 == 0);
         check("bottom 200 ppm fast stays within 3 ticks (111 ns) of the top", maxf <= 3);
         check("bottom 200 ppm slow stays within 3 ticks (111 ns) of the top", maxs <= 3);
@@ -165,7 +167,7 @@ module tb_cycle_timer;
         cut = 1;
         repeat (3 * 675) @(posedge clk_t);
         check("SYNC unplugged: sync_ok drops on every bottom board", !ok_0 && !ok_f && !ok_s);
-        $display("INFO sync_ok dropped %0d ticks after the last SYNC edge", age_at_drop);
+        $fdisplay(out, "INFO sync_ok dropped %0d ticks after the last SYNC edge", age_at_drop);
         check("sync_ok drops about 1400 ticks (52 us, ~2 cycles) after the last edge",
               age_at_drop >= 1399 && age_at_drop <= 1402);
         check("top board is not affected", ok_t);
@@ -179,7 +181,8 @@ module tb_cycle_timer;
         measure = 0;
         check("after relocking the offsets are back within limits", max0 == 0 && maxf <= 3 && maxs <= 3);
 
-        $display("SUMMARY failures=%0d", failures);
+        $fdisplay(out, "SUMMARY failures=%0d", failures);
+        report_close;
         $finish;
     end
 endmodule

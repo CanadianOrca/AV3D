@@ -15,7 +15,7 @@ The Pi tests also need `pip install -r firmware/pi/requirements-dev.txt` (numpy,
     python run_sims.py board        only the tests with "board" in their name
 
 It ends with a table and "ALL TESTS PASSED", or the number of tests that failed.
-The full output of every test is saved in build/<test name>.log.
+The full output of every test is saved in build/ (see the end of this file).
 
 ## What each test checks
 
@@ -32,9 +32,10 @@ The full output of every test is saved in build/<test name>.log.
 | tb_system.v | two boards linked by SYNC and STEP, bottom crystal +200 and -200 ppm: every output of all 288 channels, same point on both boards, unplugging and replugging the cables, PLAY in either order |
 | tb_vectors.v | the bytes made by the real Pi code (firmware/pi/tools/make_vectors.py) played into two boards: stored points, count, rate and every output must match what the Pi code meant |
 | hc595.v | a model of one 74AHC595, used by the tests above |
+| tb_report.vh | shared by the tests: writes every result line to the screen and to a results file that run_sims.py reads |
 | run_sims.py | runs all of the above, plus the Pi unit tests (firmware/pi/tools/test_*.py) and the sound simulation (firmware/pi/tools/sound_sim.py) |
 
 ## Made when the tests run (not in git)
 
-- build/: compiled simulations, logs, waveforms
+- build/: compiled simulations, the simulator's screen output (`<nn>_<test>.log`), the results each test wrote (`<nn>_<test>_results.txt`), waveforms
 - vectors/, vectors_2b/: byte files written by make_vectors.py

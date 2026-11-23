@@ -9,6 +9,7 @@
 
 `timescale 1ps/1ps
 module tb_shift_out;
+    `include "tb_report.vh"
     reg clk = 0;
     always #18518 clk = ~clk;
     reg rst = 1;
@@ -46,8 +47,8 @@ module tb_shift_out;
     integer failures = 0;
     task check(input [8*120-1:0] name, input ok);
         begin
-            if (ok) $display("PASS %0s", name);
-            else begin $display("FAIL %0s", name); failures = failures + 1; end
+            if (ok) $fdisplay(out, "PASS %0s", name);
+            else begin $fdisplay(out, "FAIL %0s", name); failures = failures + 1; end
         end
     endtask
 
@@ -82,6 +83,7 @@ module tb_shift_out;
     integer s, n, cycles, t_req, t_on;
     reg ok;
     initial begin
+        report_open;
         for (s = 0; s < 32; s = s + 1) table_p[s] = {$random, $random, $random, $random, $random};
         repeat (20) @(posedge clk);
         rst = 0;
@@ -91,7 +93,7 @@ module tb_shift_out;
         check_on = 1;
         repeat (20) @(posedge cycle_start);
         check_on = 0;
-        $display("INFO %0d latches checked", latches);
+        $fdisplay(out, "INFO %0d latches checked", latches);
         check("every latched 144-bit pattern equals the pattern for that step", latch_bad == 0 && latches >= 600);
         check("8 SRCLK pulses per step on both clock lines", step_clk_bad == 0);
         check("SRCLK and DATA quiet in the idle part of the step (where sync corrections happen)", idle_bad == 0);
@@ -132,7 +134,8 @@ module tb_shift_out;
         check("/OE goes high on the first clock after the request is dropped", sr_oe_n === 1'b1);
         check("outputs read 0 with /OE high (pull-downs)", q_pins === 144'd0);
 
-        $display("SUMMARY failures=%0d", failures);
+        $fdisplay(out, "SUMMARY failures=%0d", failures);
+        report_close;
         $finish;
     end
 endmodule

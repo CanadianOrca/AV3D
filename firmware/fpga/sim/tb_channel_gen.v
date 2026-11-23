@@ -7,6 +7,7 @@
 
 `timescale 1ns/1ps
 module tb_channel_gen;
+    `include "tb_report.vh"
     localparam NCH = 144;
 
     reg  [NCH*6-1:0] cfg;
@@ -21,8 +22,8 @@ module tb_channel_gen;
     integer failures = 0;
     task check(input [8*120-1:0] name, input ok);
         begin
-            if (ok) $display("PASS %0s", name);
-            else begin $display("FAIL %0s", name); failures = failures + 1; end
+            if (ok) $fdisplay(out, "PASS %0s", name);
+            else begin $fdisplay(out, "FAIL %0s", name); failures = failures + 1; end
         end
     endtask
 
@@ -44,6 +45,7 @@ module tb_channel_gen;
     integer n, s, tm, trial, errs, highs, c;
     reg ok;
     initial begin
+        report_open;
         // ---- random settings, every step, every mode, enable on and off
         errs = 0;
         for (trial = 0; trial < 20; trial = trial + 1) begin
@@ -108,7 +110,8 @@ module tb_channel_gen;
         for (n = 0; n < NCH; n = n + 1) if (pattern[n] !== ((n / 8) >= 2)) ok = 0;
         check("test mode 3 at step 17: banks 3-18 high, banks 1-2 low", ok);
 
-        $display("SUMMARY failures=%0d", failures);
+        $fdisplay(out, "SUMMARY failures=%0d", failures);
+        report_close;
         $finish;
     end
 endmodule

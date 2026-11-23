@@ -7,6 +7,7 @@
 
 `timescale 1ps/1ps
 module tb_cmd_decoder;
+    `include "tb_report.vh"
     reg clk = 0;
     always #18518 clk = ~clk;
     reg rst = 1;
@@ -46,8 +47,8 @@ module tb_cmd_decoder;
     integer failures = 0;
     task check(input [8*120-1:0] name, input ok);
         begin
-            if (ok) $display("PASS %0s", name);
-            else begin $display("FAIL %0s", name); failures = failures + 1; end
+            if (ok) $fdisplay(out, "PASS %0s", name);
+            else begin $fdisplay(out, "FAIL %0s", name); failures = failures + 1; end
         end
     endtask
 
@@ -125,6 +126,7 @@ module tb_cmd_decoder;
     reg [23:0] save_col;
     integer c, we0;
     initial begin
+        report_open;
         repeat (10) @(posedge clk);
         rst = 0;
         repeat (5) @(posedge clk);
@@ -228,7 +230,8 @@ module tb_cmd_decoder;
         check("NOP and an unknown command (0x55) cause no action",
               n_play + n_stop + n_off + n_show + n_test + n_we == 0 && count == 680 && rate == 6 && trim == 12);
 
-        $display("SUMMARY failures=%0d", failures);
+        $fdisplay(out, "SUMMARY failures=%0d", failures);
+        report_close;
         $finish;
     end
 endmodule

@@ -8,6 +8,7 @@
 
 `timescale 1ns/1ps
 module tb_button;
+    `include "tb_report.vh"
     reg clk = 0;
     always #18.5185 clk = ~clk;                              // 27 MHz
     reg btn = 0;
@@ -23,8 +24,8 @@ module tb_button;
     always @(posedge clk) if (DUT.btn_press) presses = presses + 1;
     task check(input [8*120-1:0] name, input ok);
         begin
-            if (ok) $display("PASS %0s", name);
-            else begin $display("FAIL %0s", name); failures = failures + 1; end
+            if (ok) $fdisplay(out, "PASS %0s", name);
+            else begin $fdisplay(out, "FAIL %0s", name); failures = failures + 1; end
         end
     endtask
     task bounce(input integer n);                      // n random edges 20-200 us apart
@@ -36,6 +37,7 @@ module tb_button;
 `endif
 
     initial begin
+        report_open;
         check("debounce time is the production value (BTN_BITS = 18)", DUT.BTN_BITS == 18);
         #(50_000);
         bounce(9); btn = 0;                                 // contact noise around power-up
@@ -53,7 +55,8 @@ module tb_button;
         check("releasing does not step the mode", DUT.test_mode == 2'd1 && presses == 1);
         bounce(5); btn = 1; #(15_000_000);
         check("a second press steps the test mode 1 -> 2", DUT.test_mode == 2'd2 && presses == 2);
-        $display("SUMMARY failures=%0d", failures);
+        $fdisplay(out, "SUMMARY failures=%0d", failures);
+        report_close;
         $finish;
     end
 endmodule

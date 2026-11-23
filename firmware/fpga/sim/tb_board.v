@@ -9,6 +9,7 @@
 
 `timescale 1ps/1ps
 module tb_board;
+    `include "tb_report.vh"
     reg clk = 0;
     always #18518 clk = ~clk;                               // 27 MHz (both boards, no sync needed)
 
@@ -43,8 +44,8 @@ module tb_board;
     integer failures = 0;
     task check(input [8*120-1:0] name, input ok);
         begin
-            if (ok) $display("PASS %0s", name);
-            else begin $display("FAIL %0s", name); failures = failures + 1; end
+            if (ok) $fdisplay(out, "PASS %0s", name);
+            else begin $fdisplay(out, "FAIL %0s", name); failures = failures + 1; end
         end
     endtask
 
@@ -175,6 +176,7 @@ module tb_board;
     reg [9:0] idx, idx2;
     reg ok;
     initial begin
+        report_open;
         for (p = 0; p < 680; p = p + 1) new_point(p);
         #(200_000_000);                                     // past the shortened power-on reset
         check("board roles: J7 shorted = TOP, open = BOTTOM", TOP.is_top && !LONE.is_top);
@@ -193,7 +195,7 @@ module tb_board;
         track = 1; e0 = errs;
         #(5_000_000_000);                                   // 5 ms = 200 cycles, 66 points
         track = 0;
-        $display("INFO %0d point changes, %0d STEP pulses (%0d wraps), %0d latches", seen_changes, pulses, wraps, latches);
+        $fdisplay(out, "INFO %0d point changes, %0d STEP pulses (%0d wraps), %0d latches", seen_changes, pulses, wraps, latches);
         check("PLAY: drivers on", !oe_t);
         check("points play in order 0,1,2,3,4,5,0,...", wrong_order == 0 && seen_changes >= 60);
         check("rate 3: every point lasts exactly 3 cycles (75 us)", wrong_len == 0);
@@ -270,7 +272,8 @@ module tb_board;
         #(2_000_000);
         check("bottom board OFF", oe_l && lone_on == 0);
 
-        $display("SUMMARY failures=%0d", failures);
+        $fdisplay(out, "SUMMARY failures=%0d", failures);
+        report_close;
         $finish;
     end
 endmodule

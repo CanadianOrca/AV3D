@@ -12,6 +12,7 @@
 
 `timescale 1ps/1ps
 module tb_system;
+    `include "tb_report.vh"
     parameter real PPM = 200.0;
 
     // ------------------------------------------------------------ clocks
@@ -55,8 +56,8 @@ module tb_system;
     integer failures = 0;
     task check(input [8*120-1:0] name, input ok);
         begin
-            if (ok) $display("PASS %0s", name);
-            else begin $display("FAIL %0s", name); failures = failures + 1; end
+            if (ok) $fdisplay(out, "PASS %0s", name);
+            else begin $fdisplay(out, "FAIL %0s", name); failures = failures + 1; end
         end
     endtask
 
@@ -191,6 +192,7 @@ module tb_system;
     integer p, c, w, hard0, oe_b_on_during_loss, t;
     reg ok;
     initial begin
+        report_open;
         for (p = 0; p < 1024; p = p + 1) begin
             for (c = 0; c < 144; c = c + 1) cfg[p][c] = {($random & 3) != 0, 5'($random)};
             rgb[p] = $random;
@@ -245,9 +247,9 @@ module tb_system;
         check("bottom stayed locked: no hard relock during play", hard == hard0);
         if (PPM > 0) check("bottom (fast crystal) was slowed by gentle corrections", soft_pos > 0);
         else         check("bottom (slow crystal) was sped up by gentle corrections", soft_neg > 0);
-        $display("INFO latches top %0d bottom %0d, gentle corrections +%0d -%0d, hard relocks %0d",
+        $fdisplay(out, "INFO latches top %0d bottom %0d, gentle corrections +%0d -%0d, hard relocks %0d",
                  latches_t, latches_b, soft_pos, soft_neg, hard);
-        $display("INFO latch skew bottom - top: %.0f .. %.0f ns over %0d cycles", skew_min, skew_max, nskew);
+        $fdisplay(out, "INFO latch skew bottom - top: %.0f .. %.0f ns over %0d cycles", skew_min, skew_max, nskew);
         check("board-to-board latch skew within 100 ns", skew_max < 100 && skew_min > -100);
 
         // ---- SYNC cable unplugged for 1 ms during play
@@ -293,7 +295,8 @@ module tb_system;
         #(100_000_000);
         check("OFF again: both boards off", oe_t && oe_b);
 
-        $display("SUMMARY failures=%0d", failures);
+        $fdisplay(out, "SUMMARY failures=%0d", failures);
+        report_close;
         $finish;
     end
 endmodule

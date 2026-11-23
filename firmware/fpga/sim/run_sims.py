@@ -73,7 +73,12 @@ def has_modules(*names):
 
 
 def safe_name(name):
-    return re.sub(r"[^A-Za-z0-9]+", "_", name).strip("_")[:60]
+    return re.sub(r"[^A-Za-z0-9]+", "_", name).strip("_")[:50]
+
+
+# one unique file name per test: number + short name (the two system tests differ only in
+# "+" / "-", which a plain name would lose)
+TAGS = {t[0]: f"{i:02d}_{safe_name(t[0])}" for i, t in enumerate(FPGA_TESTS + VECTOR_TESTS)}
 
 
 def run(cmd, cwd, limit):
@@ -93,36 +98,93 @@ class Result:
     def __init__(self, name, status, lines, passed=0, failed=0, secs=0.0, note=""):
         self.name, self.status, self.lines = name, status, lines
         self.passed, self.failed, self.secs, self.note = passed, failed, secs, note
+        self.exit_after_pass = None     # simulator exit code if it failed only after finishing
 
 
-def verilog_result(name, code, out, secs):
+def exit_text(code):
+    """Exit status as text; Windows crash codes are easier to read in hex."""
+    if code is None:
+        return "timed out"
+    if code < 0 or code > 255:
+        return f"exit code {code} (0x{code & 0xFFFFFFFF:08X})"
+    return f"exit code {code}"
+
+
+def verilog_result(name, code, out, secs, log_path):
     lines = [l for l in out.splitlines()
              if l.startswith(("PASS", "FAIL", "INFO", "ERROR", "WARNING")) or "TIMEOUT" in l]
     n_pass = sum(1 for l in lines if l.startswith("PASS"))
     n_fail = sum(1 for l in lines if l.startswith("FAIL"))
-    ok = code == 0 and "SUMMARY failures=0" in out and n_fail == 0 and n_pass > 0
-    note = "" if ok else ("timed out" if code is None else
-                          "no SUMMARY line (simulation stopped early)" if "SUMMARY" not in out else "")
-    return Result(name, "PASS" if ok else "FAIL", lines, n_pass, n_fail, secs, note)
+    finished = "SUMMARY failures=0" in out
+    ok = finished and n_fail == 0 and n_pass > 0
+    log = os.path.relpath(log_path, os.path.dirname(HERE))
+    late_exit = None
+    if ok:
+        note = ""
+        if code not in (0, None):
+            # every check ran and the results file was closed; the simulator itself then
+            # failed while shutting down (reported once at the end, not per test)
+            late_exit = code
+    elif code is None:
+        note = f"timed out, see {log}"
+    elif "SUMMARY" not in out:
+        note = (f"no results came back from the simulator ({exit_text(code)}); "
+                f"its screen output is in {log}")
+    else:
+        note = f"see {log}"
+    r = Result(name, "PASS" if ok else "FAIL", lines, n_pass, n_fail, secs, note)
+    r.exit_after_pass = late_exit
+    return r
+
+
+def run_to_file(cmd, cwd, limit, log_path):
+    """Runs a command with its screen output going straight into a file (not a pipe)."""
+    with open(log_path, "w", encoding="utf-8", errors="replace") as log:
+        try:
+            r = subprocess.run(cmd, cwd=cwd, stdout=log, stderr=subprocess.STDOUT,
+                               stdin=subprocess.DEVNULL, timeout=limit)
+            return r.returncode
+        except subprocess.TimeoutExpired:
+            return None
+
+
+def read_text(path):
+    try:
+        with open(path, encoding="utf-8", errors="replace") as f:
+            return f.read()
+    except OSError:
+        return ""
 
 
 def compile_and_sim(name, top, tb_files, extra, limit, args, src, iverilog, vvp, plusargs=(),
                     incdirs=()):
     t0 = time.time()
-    tag = safe_name(name)
+    tag = TAGS[name]
     exe = os.path.join(BUILD, tag + ".vvp")
-    cmd = [iverilog, "-g2012", "-DSIMULATION", "-s", top, "-o", exe] + list(extra)
+    log_path = os.path.join(BUILD, tag + ".log")
+    rep_name = tag + "_results.txt"
+    rep_path = os.path.join(BUILD, rep_name)
+    for p in (exe, log_path, rep_path):
+        if os.path.exists(p):
+            os.remove(p)
+    cmd = [iverilog, "-g2012", "-DSIMULATION", "-s", top, "-o", exe, "-I" + HERE] + list(extra)
     cmd += ["-I" + d for d in incdirs]
     if args.wave:
         cmd.append("-DDUMP")
     cmd += [os.path.join(HERE, f) for f in tb_files] + src
     code, out = run(cmd, HERE, 300)
-    if code != 0:
+    if code != 0 or not os.path.exists(exe):
         return Result(name, "FAIL", out.strip().splitlines()[-15:], note="did not compile")
-    code, out = run([vvp, "-n", exe] + list(plusargs), HERE, limit)
-    with open(os.path.join(BUILD, tag + ".log"), "w", encoding="utf-8") as f:
-        f.write(out)
-    return verilog_result(name, code, out, time.time() - t0)
+    # the report path is relative to sim/ (vvp runs there), which avoids spaces and
+    # backslashes in plusargs on Windows
+    code = run_to_file([vvp, "-n", exe, "+report=build/" + rep_name] + list(plusargs), HERE,
+                       limit, log_path)
+    screen = read_text(log_path)
+    report = read_text(rep_path)
+    # the report file is written by the testbench itself and closed before $finish, so it
+    # is used when present; the screen output is the fallback
+    text = report if "SUMMARY" in report else screen
+    return verilog_result(name, code, text, time.time() - t0, log_path)
 
 
 def fpga_job(test, args, src, iverilog, vvp):
@@ -205,6 +267,12 @@ def main():
     if not src:
         sys.exit(f"no .v files in {args.src}")
     os.makedirs(BUILD, exist_ok=True)
+    for old in glob.glob(os.path.join(BUILD, "*")):
+        if old.endswith((".vvp", ".log", "_results.txt")):
+            try:
+                os.remove(old)
+            except OSError:
+                pass
 
     def wanted(name, slow):
         return (args.only.lower() in name.lower()) and not (args.quick and slow)
@@ -245,6 +313,13 @@ def main():
         counts = f"{r.passed} passed, {r.failed} failed" if r.status != "SKIPPED" else r.note
         print(f"{r.status:8s} {r.name:52s} {counts}")
     print("-" * 78)
+    late = [r for r in results if r.exit_after_pass is not None]
+    if late:
+        codes = ", ".join(sorted({exit_text(r.exit_after_pass) for r in late}))
+        print(f"Note: the simulator (vvp) ended with {codes} after {len(late)} of the tests had")
+        print("      finished. Every check had already run and its results were saved, so the")
+        print("      results above are complete. 0xC0000005 is a crash inside the simulator while")
+        print("      it shuts down (seen with Icarus 14.0-devel on Windows), not a problem in AV3D.")
     bad = [r for r in results if r.status == "FAIL"]
     skipped = [r for r in results if r.status == "SKIPPED"]
     total = time.time() - t_start
